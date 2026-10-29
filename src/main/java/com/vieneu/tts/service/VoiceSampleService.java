@@ -32,6 +32,10 @@ public class VoiceSampleService {
 
     private static final String SAMPLE_DIR = "samples";
 
+    /** Văn bản đọc mẫu cho mọi giọng; giữ trùng với chữ gợi ý (placeholder) trong ô nhập của web. */
+    static final String SAMPLE_TEXT =
+            "Mỗi ngày thức dậy là một cơ hội mới để bắt đầu lại. Đừng sợ bước chậm, chỉ sợ đứng yên. Hãy tin rằng những cố gắng nhỏ bé hôm nay sẽ trở thành thành quả lớn lao ngày mai. Cứ kiên trì đi tiếp, vì con đường nào cũng có điểm đến cho người không bỏ cuộc.";
+
     private final TtsProperties props;
     private final VoiceService voices;
     private final VieNeuClient engine;
@@ -117,8 +121,7 @@ public class VoiceSampleService {
         Path partial = target.resolveSibling(target.getFileName() + ".part");
         Path pcm = null;
         try {
-            String text = "Xin chào, tôi là " + voice.name() + ". Đây là giọng đọc mẫu để bạn nghe thử.";
-            byte[] data = engine.synthesizePcm(text, voice.id());
+            byte[] data = engine.synthesizePcm(SAMPLE_TEXT, voice.id());
             Files.createDirectories(target.getParent());
             pcm = Files.createTempFile("sample-", ".pcm");
             Files.write(pcm, data);
