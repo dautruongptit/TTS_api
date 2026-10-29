@@ -63,7 +63,7 @@ public class TtsJobService {
         ExtractedText extracted = extraction.extract(file, text);
 
         OffsetDateTime now = OffsetDateTime.now();
-        if (jobs.countByClientIpAndCreatedAtAfter(clientIp, now.minusHours(1)) >= props.maxJobsPerIpPerHour()) {
+        if (jobs.countByClientIpAndStatusNotAndCreatedAtAfter(clientIp, JobStatus.FAILED, now.minusHours(1)) >= props.maxJobsPerIpPerHour()) {
             throw new ApiException(HttpStatus.TOO_MANY_REQUESTS, "RATE_LIMITED",
                     "Bạn đã tạo quá nhiều voice trong 1 giờ. Vui lòng thử lại sau.");
         }

@@ -20,7 +20,8 @@ public interface TtsJobRepository extends JpaRepository<TtsJob, UUID> {
 
     long countByStatusAndCreatedAtBefore(JobStatus status, OffsetDateTime createdAt);
 
-    long countByClientIpAndCreatedAtAfter(String clientIp, OffsetDateTime since);
+    /** Đếm job của IP trong khoảng thời gian, bỏ qua job FAILED (lỗi hệ thống không tính vào hạn mức). */
+    long countByClientIpAndStatusNotAndCreatedAtAfter(String clientIp, JobStatus status, OffsetDateTime since);
 
     List<TtsJob> findByStatus(JobStatus status);
 
