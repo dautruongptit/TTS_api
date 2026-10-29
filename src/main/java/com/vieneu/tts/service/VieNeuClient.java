@@ -19,12 +19,25 @@ import java.util.Map;
 @Service
 public class VieNeuClient {
 
+    /** Số lần thử lại thêm cho mỗi đoạn khi lỗi tạm thời (đứt kết nối, 502/503/504). */
+    private static final int TRANSIENT_RETRIES = 2;
+    private static final long TRANSIENT_DELAY_MS = 3000;
+
     private final RestClient client;
     private final TtsProperties.Vieneu config;
 
     public VieNeuClient(RestClient vieneuRestClient, TtsProperties props) {
         this.client = vieneuRestClient;
         this.config = props.vieneu();
+    }
+
+    static boolean isTimeout(Throwable e) {
+        for (Throwable t = e; t != null; t = t.getCause()) {
+            if (t instanceof java.net.SocketTimeoutException || t instanceof java.net.http.HttpTimeoutException) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** Trả JSON thô của GET /v1/voices. */
@@ -57,6 +70,7 @@ public class VieNeuClient {
         body.put("response_format", "pcm");
         body.put("sample_rate", config.sampleRate());
 
+        int transientFailures = 0;
         for (int attempt = 1; ; attempt++) {
             try {
                 byte[] pcm = client.post()
@@ -80,8 +94,21 @@ public class VieNeuClient {
                 throw new VieNeuException("Engine từ chối yêu cầu (HTTP " + e.getStatusCode().value()
                         + "). Kiểm tra giọng đọc hoặc API key.", e);
             } catch (HttpServerErrorException e) {
-                throw new VieNeuException("Engine gặp lỗi (HTTP " + e.getStatusCode().value() + ").", e);
+                int status = e.getStatusCode().value();
+                // 502/503/504: tunnel hoặc engine chập chờn, thử lại đoạn này thay vì hỏng cả job
+                if ((status == 502 || status == 503 || status == 504) && ++transientFailures <= TRANSIENT_RETRIES) {
+                    log.warn("Engine trả HTTP {} (lần {}/{}), thử lại đoạn này", status, transientFailures, TRANSIENT_RETRIES);
+                    Thread.sleep(TRANSIENT_DELAY_MS);
+                    continue;
+                }
+                throw new VieNeuException("Engine gặp lỗi (HTTP " + status + ").", e);
             } catch (ResourceAccessException e) {
+                // Đứt kết nối (connection reset...) thì thử lại; quá thời gian chờ thì không, vì engine có thể vẫn đang xử lý.
+                if (!isTimeout(e) && ++transientFailures <= TRANSIENT_RETRIES) {
+                    log.warn("Mất kết nối tới engine (lần {}/{}): {}", transientFailures, TRANSIENT_RETRIES, e.getMessage());
+                    Thread.sleep(TRANSIENT_DELAY_MS);
+                    continue;
+                }
                 throw new VieNeuException("Không kết nối được engine VieNeu-TTS hoặc quá thời gian chờ.", e);
             }
         }
