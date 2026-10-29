@@ -109,6 +109,7 @@ public class TtsGenerationService {
         f.setOriginalSource(job.getSource());
         f.setTextHash(TtsJobService.hash(job.getVoiceId(), job.getSpeed(), job.getOutputFormat(), job.getTextContent()));
         f.setTextContent(job.getTextContent());
+        f.setOwnerId(job.getOwnerId());
         f.setVoiceId(job.getVoiceId());
         f.setSpeed(job.getSpeed());
         f.setOutputFormat(job.getOutputFormat());

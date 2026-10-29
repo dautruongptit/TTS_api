@@ -29,8 +29,8 @@ public class JobEventPublisher {
         this.jobService = jobService;
     }
 
-    public SseEmitter subscribe(UUID jobId) {
-        jobService.progress(jobId); // ném 404 ngay nếu job không tồn tại
+    public SseEmitter subscribe(UUID jobId, String ownerId) {
+        jobService.progress(jobId, ownerId); // ném 404 ngay nếu job không tồn tại
 
         SseEmitter emitter = new SseEmitter(TIMEOUT_MS);
         AtomicReference<ScheduledFuture<?>> task = new AtomicReference<>();
@@ -46,7 +46,7 @@ public class JobEventPublisher {
 
         task.set(executor.scheduleWithFixedDelay(() -> {
             try {
-                JobProgressResponse p = jobService.progress(jobId);
+                JobProgressResponse p = jobService.progress(jobId, ownerId);
                 emitter.send(SseEmitter.event().name("progress").data(p));
                 if (p.status().equals(JobStatus.COMPLETED.name()) || p.status().equals(JobStatus.FAILED.name())) {
                     cancel.run();

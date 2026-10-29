@@ -41,7 +41,7 @@ public class TtsJobService {
     }
 
     public CreateJobResponse create(MultipartFile file, String text, String voice, Double speedParam,
-                                    String formatParam, Integer ttlParam, String clientIp) {
+                                    String formatParam, Integer ttlParam, String clientIp, String ownerId) {
         if (voice == null || voice.isBlank()) {
             throw ApiException.badRequest("VOICE_REQUIRED", "Vui lòng chọn giọng đọc.");
         }
@@ -73,7 +73,7 @@ public class TtsJobService {
         }
 
         String hash = hash(voice.strip(), speed, format, extracted.text());
-        Optional<TtsAudioFile> cached = files.findFirstByTextHashAndExpiresAtAfter(hash, now);
+        Optional<TtsAudioFile> cached = files.findFirstByTextHashAndOwnerIdAndExpiresAtAfter(hash, ownerId, now);
 
         TtsJob job = new TtsJob();
         job.setId(UUID.randomUUID());
@@ -84,6 +84,7 @@ public class TtsJobService {
         job.setOutputFormat(format);
         job.setTtlHours(ttl);
         job.setClientIp(clientIp);
+        job.setOwnerId(ownerId);
         job.setCreatedAt(now);
         if (cached.isPresent()) {
             job.setStatus(JobStatus.COMPLETED);
@@ -100,8 +101,9 @@ public class TtsJobService {
         return new CreateJobResponse(job.getId(), job.getStatus().name(), job.getProgressPercent(), job.getMessage());
     }
 
-    public JobProgressResponse progress(UUID jobId) {
+    public JobProgressResponse progress(UUID jobId, String ownerId) {
         TtsJob job = jobs.findById(jobId)
+                .filter(j -> ownerId != null && ownerId.equals(j.getOwnerId()))
                 .orElseThrow(() -> ApiException.notFound("JOB_NOT_FOUND", "Không tìm thấy tác vụ."));
         OffsetDateTime now = OffsetDateTime.now();
 

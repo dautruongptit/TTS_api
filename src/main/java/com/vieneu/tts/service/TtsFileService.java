@@ -31,16 +31,17 @@ public class TtsFileService {
         this.storage = storage;
     }
 
-    public List<AudioFileResponse> list() {
+    public List<AudioFileResponse> list(String ownerId) {
         OffsetDateTime now = OffsetDateTime.now();
-        return files.findByExpiresAtAfterOrderByCreatedAtDesc(now).stream()
+        return files.findByOwnerIdAndExpiresAtAfterOrderByCreatedAtDesc(ownerId, now).stream()
                 .map(f -> AudioFileResponse.from(f, now))
                 .toList();
     }
 
     /** File còn hạn, nếu đã hết hạn nhưng chưa được dọn thì trả 410. */
-    public TtsAudioFile getActive(UUID id) {
+    public TtsAudioFile getActive(UUID id, String ownerId) {
         TtsAudioFile f = files.findById(id)
+                .filter(x -> ownerId != null && ownerId.equals(x.getOwnerId()))
                 .orElseThrow(() -> ApiException.notFound("FILE_NOT_FOUND", "Không tìm thấy file."));
         if (!f.getExpiresAt().isAfter(OffsetDateTime.now())) {
             throw new ApiException(HttpStatus.GONE, "FILE_EXPIRED", "File đã hết hạn lưu trữ.");
@@ -57,11 +58,11 @@ public class TtsFileService {
     }
 
     /** Gia hạn: expires_at = created_at + ttlHours (ttlHours tính từ lúc tạo file). */
-    public AudioFileResponse updateRetention(UUID id, int ttlHours) {
+    public AudioFileResponse updateRetention(UUID id, int ttlHours, String ownerId) {
         if (ttlHours < 1 || ttlHours > props.maxTtlHours()) {
             throw ApiException.badRequest("INVALID_TTL", "Thời hạn lưu phải từ 1 đến " + props.maxTtlHours() + " giờ.");
         }
-        TtsAudioFile f = getActive(id);
+        TtsAudioFile f = getActive(id, ownerId);
         OffsetDateTime expires = f.getCreatedAt().plusHours(ttlHours);
         OffsetDateTime now = OffsetDateTime.now();
         if (!expires.isAfter(now)) {
@@ -72,8 +73,9 @@ public class TtsFileService {
         return AudioFileResponse.from(files.save(f), now);
     }
 
-    public void delete(UUID id) {
+    public void delete(UUID id, String ownerId) {
         TtsAudioFile f = files.findById(id)
+                .filter(x -> ownerId != null && ownerId.equals(x.getOwnerId()))
                 .orElseThrow(() -> ApiException.notFound("FILE_NOT_FOUND", "Không tìm thấy file."));
         try {
             storage.deleteIfExists(f.getStoragePath());

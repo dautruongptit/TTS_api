@@ -33,6 +33,9 @@ public class TtsAudioFile {
     @Column(name = "text_hash", nullable = false, length = 64)
     private String textHash;
 
+    @Column(name = "owner_id", length = 64)
+    private String ownerId;
+
     @Column(name = "text_content", nullable = false, columnDefinition = "text")
     private String textContent;
 

@@ -19,7 +19,7 @@ import java.util.Locale;
 public class VoiceService {
 
     /** Thứ tự ghim cố định ở đầu danh sách. */
-    static final List<String> PRIORITY = List.of("Minh Quân", "Adam Tốp Tốp", "Hải Đăng", "Duyên Hà My");
+    static final List<String> PRIORITY = List.of("Adam bựa");
 
     private static final Duration CACHE_TTL = Duration.ofMinutes(5);
 
@@ -77,7 +77,7 @@ public class VoiceService {
         return result;
     }
 
-    /** Đưa 4 giọng ưu tiên lên đầu (theo đúng thứ tự ghim), phần còn lại giữ thứ tự gốc. */
+    /** Đưa giọng ưu tiên lên đầu (theo thứ tự ghim), phần còn lại giữ thứ tự gốc. */
     static List<VoiceDto> arrange(List<VoiceDto> voices) {
         List<VoiceDto> pinned = new ArrayList<>();
         List<VoiceDto> rest = new ArrayList<>();

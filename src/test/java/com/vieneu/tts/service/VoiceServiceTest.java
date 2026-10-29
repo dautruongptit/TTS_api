@@ -23,16 +23,16 @@ class VoiceServiceTest {
     }
 
     @Test
-    void ghim4GiongUuTienLenDauDungThuTu() {
+    void ghimGiongUuTienLenDau() {
         List<VoiceDto> raw = List.of(
                 new VoiceDto("Thu Trang", "Thu Trang", false),
                 new VoiceDto("Duyên Hà My", "Duyên Hà My", false),
                 new VoiceDto("Hải Đăng", "Hải Đăng", false),
                 new VoiceDto("Bảo Ngọc", "Bảo Ngọc", false),
-                new VoiceDto("Minh Quân", "Minh Quân", false));
+                new VoiceDto("Adam bựa", "Adam bựa", false));
         List<VoiceDto> out = VoiceService.arrange(raw);
         assertThat(out).extracting(VoiceDto::name)
-                .containsExactly("Minh Quân", "Hải Đăng", "Duyên Hà My", "Thu Trang", "Bảo Ngọc");
-        assertThat(out).extracting(VoiceDto::priority).containsExactly(true, true, true, false, false);
+                .containsExactly("Adam bựa", "Thu Trang", "Duyên Hà My", "Hải Đăng", "Bảo Ngọc");
+        assertThat(out).extracting(VoiceDto::priority).containsExactly(true, false, false, false, false);
     }
 }

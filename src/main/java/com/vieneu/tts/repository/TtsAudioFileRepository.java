@@ -12,9 +12,9 @@ public interface TtsAudioFileRepository extends JpaRepository<TtsAudioFile, UUID
 
     boolean existsByFileName(String fileName);
 
-    List<TtsAudioFile> findByExpiresAtAfterOrderByCreatedAtDesc(OffsetDateTime now);
+    List<TtsAudioFile> findByOwnerIdAndExpiresAtAfterOrderByCreatedAtDesc(String ownerId, OffsetDateTime now);
 
     List<TtsAudioFile> findByExpiresAtLessThanEqual(OffsetDateTime now);
 
-    Optional<TtsAudioFile> findFirstByTextHashAndExpiresAtAfter(String textHash, OffsetDateTime now);
+    Optional<TtsAudioFile> findFirstByTextHashAndOwnerIdAndExpiresAtAfter(String textHash, String ownerId, OffsetDateTime now);
 }

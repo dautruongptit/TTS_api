@@ -1,5 +1,6 @@
 package com.vieneu.tts.controller;
 
+import com.vieneu.tts.config.ClientIdFilter;
 import com.vieneu.tts.dto.CreateJobResponse;
 import com.vieneu.tts.dto.JobProgressResponse;
 import com.vieneu.tts.service.ClientIpResolver;
@@ -42,17 +43,17 @@ public class TtsJobController {
             @RequestParam(required = false, defaultValue = "mp3") String format,
             @RequestParam(required = false) Integer ttlHours,
             HttpServletRequest request) {
-        return jobs.create(file, text, voice, speed, format, ttlHours, ClientIpResolver.resolve(request));
+        return jobs.create(file, text, voice, speed, format, ttlHours, ClientIpResolver.resolve(request), ClientIdFilter.of(request));
     }
 
     @GetMapping("/{jobId}/progress")
-    public JobProgressResponse progress(@PathVariable UUID jobId) {
-        return jobs.progress(jobId);
+    public JobProgressResponse progress(@PathVariable UUID jobId, HttpServletRequest request) {
+        return jobs.progress(jobId, ClientIdFilter.of(request));
     }
 
     /** SSE: sự kiện "progress" mỗi giây, đóng kết nối khi job COMPLETED hoặc FAILED. */
     @GetMapping(value = "/{jobId}/events", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter events(@PathVariable UUID jobId) {
-        return events.subscribe(jobId);
+    public SseEmitter events(@PathVariable UUID jobId, HttpServletRequest request) {
+        return events.subscribe(jobId, ClientIdFilter.of(request));
     }
 }

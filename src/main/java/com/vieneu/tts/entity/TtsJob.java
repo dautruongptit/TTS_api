@@ -48,6 +48,9 @@ public class TtsJob {
     @Column(name = "client_ip", nullable = false, length = 64)
     private String clientIp;
 
+    @Column(name = "owner_id", length = 64)
+    private String ownerId;
+
     @Column(name = "progress_percent", nullable = false)
     private int progressPercent;
 
