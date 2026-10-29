@@ -1,0 +1,38 @@
+name: vieneu-studio-api
+
+# Chỉ backend. Postgres đã chạy sẵn (container tts-db, network tts-db-network).
+# Network vieneu-studio-net do compose này tạo; frontend (repo web) nối vào cùng network để proxy /api -> backend:8010.
+services:
+  backend:
+    build:
+      context: .
+    image: vieneu-studio-api:latest
+    container_name: vieneu-studio-api
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      SERVER_PORT: "8010"
+      DB_URL: jdbc:postgresql://${DB_HOST:-tts-db}:${DB_PORT:-5432}/${DB_NAME:-tts}
+      STORAGE_DIR: /app/storage/audio
+    ports:
+      - "127.0.0.1:8010:8010"
+    volumes:
+      - ./storage/audio:/app/storage/audio
+    networks:
+      - vieneu-studio-net
+      - tts-db-network
+    mem_limit: 1g
+    cpus: 1.5
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8010/actuator/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
+networks:
+  vieneu-studio-net:
+    name: vieneu-studio-net
+  tts-db-network:
+    name: tts-db-network
+    external: true
