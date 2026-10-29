@@ -1,7 +1,7 @@
 name: tts-api
 
-# Chỉ backend. Postgres đã chạy sẵn (container tts-db). Tên network chứa Postgres đặt bằng DB_NETWORK trong .env (mặc định tts-db-network).
-# Network tts-net do compose này tạo; tts-web (repo web) nối vào cùng network để proxy /api -> tts-api:8010.
+# Chỉ backend. Postgres đã chạy sẵn (container infra-postgres). Tên network chứa Postgres đặt bằng DB_NETWORK trong .env.
+# Network tts-net dùng chung với vieneu-service và tts-web, đã có sẵn trên server. Nếu chưa có thì tạo một lần: docker network create tts-net
 services:
   tts-api:
     build:
@@ -33,6 +33,7 @@ services:
 networks:
   tts-net:
     name: tts-net
+    external: true
   tts-db:
     name: ${DB_NETWORK:-tts-db-network}
     external: true
