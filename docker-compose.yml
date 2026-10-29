@@ -1,13 +1,13 @@
-name: vieneu-studio-api
+name: tts-api
 
 # Chỉ backend. Postgres đã chạy sẵn (container tts-db, network tts-db-network).
-# Network vieneu-studio-net do compose này tạo; frontend (repo web) nối vào cùng network để proxy /api -> backend:8010.
+# Network tts-net do compose này tạo; tts-web (repo web) nối vào cùng network để proxy /api -> tts-api:8010.
 services:
-  backend:
+  tts-api:
     build:
       context: .
-    image: vieneu-studio-api:latest
-    container_name: vieneu-studio-api
+    image: tts-api:latest
+    container_name: tts-api
     restart: unless-stopped
     env_file: .env
     environment:
@@ -19,7 +19,7 @@ services:
     volumes:
       - ./storage/audio:/app/storage/audio
     networks:
-      - vieneu-studio-net
+      - tts-net
       - tts-db-network
     mem_limit: 1g
     cpus: 1.5
@@ -31,8 +31,8 @@ services:
       start_period: 60s
 
 networks:
-  vieneu-studio-net:
-    name: vieneu-studio-net
+  tts-net:
+    name: tts-net
   tts-db-network:
     name: tts-db-network
     external: true
