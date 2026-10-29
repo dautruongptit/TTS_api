@@ -40,6 +40,7 @@ tts:
   storage-dir: ${STORAGE_DIR:/app/storage/audio}
   cors-allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:8020}
   admin-token: ${ADMIN_TOKEN:}
+  db-auto-create: ${DB_AUTO_CREATE:true}
   max-text-length: ${MAX_TEXT_LENGTH:2000}
   max-pending-jobs: ${MAX_PENDING_JOBS:10}
   max-jobs-per-ip-per-hour: ${MAX_JOBS_PER_IP_PER_HOUR:10}
