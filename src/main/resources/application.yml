@@ -1,5 +1,5 @@
 server:
-  port: ${API_PORT:8010}
+  port: ${SERVER_PORT:8010}
   forward-headers-strategy: none
 
 spring:
@@ -18,8 +18,13 @@ spring:
     locations: classpath:db/migration
   servlet:
     multipart:
-      max-file-size: ${MAX_UPLOAD_SIZE:10MB}
-      max-request-size: ${MAX_UPLOAD_SIZE:10MB}
+      max-file-size: 20MB
+      max-request-size: 20MB
+  task:
+    scheduling:
+      pool:
+        # worker tạo voice chạy lâu, cần luồng riêng để cleanup không bị chặn
+        size: 3
 
 management:
   endpoints:
@@ -38,10 +43,18 @@ tts:
   max-pending-jobs: ${MAX_PENDING_JOBS:10}
   max-jobs-per-ip-per-hour: ${MAX_JOBS_PER_IP_PER_HOUR:10}
   default-ttl-hours: ${FILE_TTL_HOURS:24}
+  max-ttl-hours: ${MAX_TTL_HOURS:720}
   min-speed: 0.5
   max-speed: 2.0
+  chunk-max-chars: 400
+  ffmpeg-path: ${FFMPEG_PATH:ffmpeg}
+  ffmpeg-timeout-seconds: 300
   vieneu:
     base-url: ${VIENEU_API_URL}
     api-key: ${VIENEU_API_KEY}
+    model: ${VIENEU_MODEL:}
+    sample-rate: 48000
     connect-timeout-seconds: 10
-    read-timeout-seconds: 120
+    read-timeout-seconds: 180
+    max-retries: 6
+    retry-delay-seconds: 5

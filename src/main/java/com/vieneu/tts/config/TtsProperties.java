@@ -12,10 +12,22 @@ public record TtsProperties(
         int maxPendingJobs,
         int maxJobsPerIpPerHour,
         int defaultTtlHours,
+        int maxTtlHours,
         double minSpeed,
         double maxSpeed,
+        int chunkMaxChars,
+        String ffmpegPath,
+        int ffmpegTimeoutSeconds,
         Vieneu vieneu) {
 
-    public record Vieneu(String baseUrl, String apiKey, int connectTimeoutSeconds, int readTimeoutSeconds) {
+    public record Vieneu(
+            String baseUrl,
+            String apiKey,
+            String model,
+            int sampleRate,
+            int connectTimeoutSeconds,
+            int readTimeoutSeconds,
+            int maxRetries,
+            int retryDelaySeconds) {
     }
 }
