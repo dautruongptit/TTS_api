@@ -1,6 +1,6 @@
 package com.vieneu.tts.controller;
 
-import com.vieneu.tts.dto.VoiceDto;
+import com.vieneu.tts.dto.VoiceResponse;
 import com.vieneu.tts.service.VoiceSampleService;
 import com.vieneu.tts.service.VoiceService;
 import org.springframework.core.io.FileSystemResource;
@@ -29,17 +29,19 @@ public class VoiceController {
     }
 
     @GetMapping
-    public List<VoiceDto> list() {
-        return voices.list();
+    public List<VoiceResponse> list() {
+        return voices.list().stream()
+                .map(v -> new VoiceResponse(v.id(), v.name(), v.priority(), samples.isReady(v.id())))
+                .toList();
     }
 
-    /** Giọng đọc mẫu để nghe thử. Lần đầu có thể mất vài chục giây nếu mẫu chưa kịp được tạo sẵn. */
+    /** Phát lại file giọng mẫu đã tạo sẵn. Không gọi engine; chưa có thì 404. */
     @GetMapping("/sample")
     public ResponseEntity<Resource> sample(@RequestParam String voice) {
-        Resource body = new FileSystemResource(samples.sampleFor(voice));
+        Resource body = new FileSystemResource(samples.existing(voice));
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType("audio/wav"))
-                .cacheControl(CacheControl.maxAge(Duration.ofDays(1)).cachePublic())
+                .cacheControl(CacheControl.maxAge(Duration.ofHours(1)).cachePublic())
                 .body(body);
     }
 }
