@@ -3,6 +3,9 @@ server:
   forward-headers-strategy: none
 
 spring:
+  config:
+    # Chạy local (IDE): tự đọc .env ở thư mục chạy. Biến môi trường thật vẫn ưu tiên hơn. Docker không có file này nên bỏ qua.
+    import: "optional:file:./.env[.properties]"
   application:
     name: tts-api
   datasource:
