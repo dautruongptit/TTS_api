@@ -2,6 +2,7 @@ package com.vieneu.tts.controller;
 
 import com.vieneu.tts.config.ClientIdFilter;
 import com.vieneu.tts.dto.AudioFileResponse;
+import com.vieneu.tts.dto.FileTextResponse;
 import com.vieneu.tts.dto.RetentionRequest;
 import com.vieneu.tts.entity.TtsAudioFile;
 import com.vieneu.tts.service.TtsFileService;
@@ -39,6 +40,13 @@ public class TtsFileController {
     @GetMapping
     public List<AudioFileResponse> list(HttpServletRequest request) {
         return service.list(ClientIdFilter.of(request));
+    }
+
+    /** Văn bản đã dùng để tạo file (lưu sẵn trong DB lúc tạo). Chỉ chủ file mới xem được. */
+    @GetMapping("/{id}/text")
+    public FileTextResponse text(@PathVariable UUID id, HttpServletRequest request) {
+        TtsAudioFile f = service.getActive(id, ClientIdFilter.of(request));
+        return new FileTextResponse(f.getFileName(), f.getTextContent());
     }
 
     /** Phát trực tuyến: ResponseEntity<Resource> tự hỗ trợ header Range để tua trên trình duyệt. */
